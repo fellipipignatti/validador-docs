@@ -16,15 +16,14 @@ app.add_middleware(
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 
-# Caminho absoluto do index.html (mesmo diretório do main.py)
 BASE_DIR = Path(__file__).parent
 INDEX_PATH = BASE_DIR / "index.html"
 
 
-async def call_claude(prompt: str) -> str:
+async def call_claude(prompt: str, max_tokens: int = 4000) -> str:
     if not ANTHROPIC_API_KEY:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY não configurada no servidor.")
-    async with httpx.AsyncClient(timeout=60) as client:
+    async with httpx.AsyncClient(timeout=90) as client:
         resp = await client.post(
             ANTHROPIC_URL,
             headers={
@@ -34,7 +33,7 @@ async def call_claude(prompt: str) -> str:
             },
             json={
                 "model": "claude-sonnet-4-20250514",
-                "max_tokens": 2000,
+                "max_tokens": max_tokens,
                 "messages": [{"role": "user", "content": prompt}],
             },
         )
@@ -51,17 +50,41 @@ async def index():
 
 @app.post("/extract")
 async def extract(text: str = Form(...), filename: str = Form("")):
-    prompt = f"""Analise o texto e extraia TODOS os pares de NOME DE PESSOA e VALOR MONETÁRIO.
-Retorne APENAS JSON válido, sem markdown, sem explicação:
-[{{"nome":"Nome da Pessoa","valor":"R$ 0,00"}}]
-Se não encontrar nenhum, retorne [].
+    """
+    Extrai todos os nomes próprios do documento e qualquer valor
+    monetário associado a eles. Retorna lista de ocorrências brutas
+    (a agregação/soma é feita no frontend).
+    """
+    prompt = f"""Você é um extrator de dados de documentos brasileiros.
 
-Texto ({filename}):
-{text[:8000]}"""
+Analise o texto abaixo e extraia TODOS os NOMES PRÓPRIOS DE PESSOAS que aparecem.
+Para cada nome, extraia também qualquer VALOR MONETÁRIO diretamente associado a ele (salário, pagamento, reembolso, etc.).
+Se um nome aparecer sem valor associado, use null para o valor.
+Se um nome aparecer múltiplas vezes com valores diferentes, liste cada ocorrência separadamente.
+
+Retorne APENAS JSON válido, sem markdown, sem explicação, neste formato:
+[{{"nome":"Nome Completo","valor":"R$ 0,00"}}]
+
+Regras importantes:
+- Extraia APENAS nomes de pessoas físicas reais (não empresas, não cargos, não lugares)
+- Preserve o nome exatamente como aparece no documento
+- Se não houver valor associado ao nome, omita o campo valor ou use null
+- Se não encontrar nenhum nome, retorne []
+- Retorne APENAS o JSON
+
+Texto do documento ({filename}):
+{text[:12000]}"""
+
     result = await call_claude(prompt)
     result = result.replace("```json", "").replace("```", "").strip()
     try:
-        return JSONResponse({"records": json.loads(result)})
+        records = json.loads(result)
+        # Garante campo origem em cada registro
+        for r in records:
+            r["origem"] = filename
+            if "valor" not in r:
+                r["valor"] = None
+        return JSONResponse({"records": records})
     except Exception:
         raise HTTPException(status_code=422, detail="Formato inválido retornado pela IA.")
 
@@ -69,7 +92,7 @@ Texto ({filename}):
 @app.post("/chat")
 async def chat(question: str = Form(...), context: str = Form("")):
     prompt = f"{context}\nPergunta: {question}\nResponda em português de forma concisa."
-    return JSONResponse({"answer": await call_claude(prompt)})
+    return JSONResponse({"answer": await call_claude(prompt, max_tokens=600)})
 
 
 @app.get("/health")
@@ -78,5 +101,4 @@ async def health():
         "status": "ok",
         "key_configured": bool(ANTHROPIC_API_KEY),
         "index_found": INDEX_PATH.exists(),
-        "index_path": str(INDEX_PATH),
     }
