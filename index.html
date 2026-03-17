@@ -17,38 +17,31 @@
       --txt: #1a1a18; --txt2: #5f5e5a; --txt3: #9a9994;
       --border: rgba(0,0,0,0.1);
       --mono: 'DM Mono', monospace; --serif: 'Lora', Georgia, serif;
+      --radius: 8px;
     }
-    body { font-family: var(--mono); background: var(--bg2); height: 100vh; display: flex; align-items: center; justify-content: center; }
-    #app { display: flex; width: 960px; height: 680px; border-radius: 14px; overflow: hidden; border: 0.5px solid var(--border); background: var(--bg); box-shadow: 0 4px 32px rgba(0,0,0,0.08); }
-    #sidebar { width: 256px; min-width: 256px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow-y: auto; }
+    body { font-family: var(--mono); background: var(--bg2); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    #app { display: flex; width: 100%; max-width: 980px; height: 700px; border-radius: 14px; overflow: hidden; border: 0.5px solid var(--border); background: var(--bg); box-shadow: 0 4px 40px rgba(0,0,0,0.1); }
+    #sidebar { width: 258px; min-width: 258px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow-y: auto; }
     .sb-head { padding: 16px; border-bottom: 0.5px solid var(--border); }
     .sb-head h2 { font-size: 14px; font-weight: 500; color: var(--txt); font-family: var(--serif); }
     .sb-head p { font-size: 10px; color: var(--txt3); margin-top: 3px; }
     .sec { font-size: 9px; font-weight: 500; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 16px 5px; }
-    .api-row { margin: 0 12px 6px; display: flex; flex-direction: column; gap: 4px; }
-    .api-row label { font-size: 10px; color: var(--txt2); }
-    .api-row input { font-size: 11px; padding: 6px 9px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); font-family: var(--mono); }
-    .api-row input:focus { outline: none; border-color: var(--teal); }
-    #api-status { font-size: 10px; color: var(--txt3); padding: 0 16px 8px; display: flex; align-items: center; gap: 5px; }
-    .sdot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
-    .sdot.ok { background: var(--teal); }
-    .sdot.err { background: #E24B4A; }
-    .chip { display: flex; align-items: center; gap: 7px; margin: 0 12px 5px; background: var(--bg); border: 0.5px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--txt); }
+    .chip { display: flex; align-items: center; gap: 7px; margin: 0 12px 5px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 6px 10px; font-size: 11px; color: var(--txt); }
     .chip .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
     .chip .tag { margin-left: auto; font-size: 9px; color: var(--txt3); }
-    #db-zone { margin: 0 12px 6px; border: 0.5px dashed var(--border); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: all .15s; }
+    #db-zone { margin: 0 12px 6px; border: 0.5px dashed var(--border); border-radius: var(--radius); padding: 12px; text-align: center; cursor: pointer; transition: all .15s; }
     #db-zone:hover { background: var(--bg); }
     #db-zone.loaded { border-style: solid; border-color: var(--teal); }
     #db-zone p { font-size: 11px; color: var(--txt2); }
     #db-zone.loaded p { color: var(--teal-text); font-weight: 500; }
     #db-zone small { font-size: 9px; color: var(--txt3); }
     #db-stats { font-size: 10px; color: var(--txt3); padding: 0 16px 4px; }
-    #db-preview { margin: 0 12px 8px; overflow: auto; max-height: 110px; }
+    #db-preview { margin: 0 12px 8px; overflow: auto; max-height: 120px; }
     #db-preview table { width: 100%; border-collapse: collapse; font-size: 9px; }
     #db-preview th { color: var(--txt3); padding: 3px 4px; border-bottom: 0.5px solid var(--border); font-weight: 500; white-space: nowrap; }
-    #db-preview td { color: var(--txt2); padding: 3px 4px; border-bottom: 0.5px solid var(--border); white-space: nowrap; }
+    #db-preview td { color: var(--txt2); padding: 3px 4px; border-bottom: 0.5px solid var(--border); white-space: nowrap; overflow: hidden; max-width: 80px; text-overflow: ellipsis; }
     #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    #prog { height: 2px; background: var(--bg3); }
+    #prog { height: 2px; background: var(--bg3); flex-shrink: 0; }
     #prog-bar { height: 100%; width: 0; background: var(--teal); transition: width .4s; }
     #chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
     .msg { max-width: 88%; display: flex; flex-direction: column; gap: 3px; }
@@ -59,28 +52,28 @@
     .msg.user .bubble { background: var(--teal); color: #fff; border-radius: 12px 3px 12px 12px; }
     .msg-time { font-size: 9px; color: var(--txt3); }
     .msg.user .msg-time { text-align: right; }
-    #drop-zone { margin: 0 14px 10px; border: 0.5px dashed var(--border); border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; background: var(--bg2); transition: all .15s; position: relative; }
+    #drop-zone { margin: 0 14px 10px; border: 0.5px dashed var(--border); border-radius: var(--radius); padding: 15px; text-align: center; cursor: pointer; background: var(--bg2); transition: all .15s; position: relative; }
     #drop-zone:hover, #drop-zone.drag { background: var(--bg); border-color: var(--teal); }
     #drop-zone p { font-size: 12px; color: var(--txt2); }
     #drop-zone small { font-size: 10px; color: var(--txt3); }
     .ai-badge { position: absolute; top: 8px; right: 10px; font-size: 9px; background: var(--teal-light); color: var(--teal-text); padding: 2px 7px; border-radius: 20px; font-weight: 500; }
-    #input-row { display: flex; gap: 8px; padding: 10px 14px; border-top: 0.5px solid var(--border); }
-    #input-row input { flex: 1; font-size: 12px; padding: 7px 11px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); font-family: var(--mono); }
+    #input-row { display: flex; gap: 8px; padding: 10px 14px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
+    #input-row input { flex: 1; font-size: 12px; padding: 7px 11px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); font-family: var(--mono); }
     #input-row input:focus { outline: none; border-color: var(--teal); }
-    #input-row button { font-size: 12px; padding: 7px 14px; border-radius: 8px; border: none; background: var(--teal); color: #fff; cursor: pointer; font-family: var(--mono); font-weight: 500; }
-    #input-row button:hover { background: var(--teal-dark); }
-    #result-panel { border-top: 0.5px solid var(--border); background: var(--bg2); max-height: 260px; display: none; flex-direction: column; }
+    #send-btn { font-size: 12px; padding: 7px 14px; border-radius: var(--radius); border: none; background: var(--teal); color: #fff; cursor: pointer; font-family: var(--mono); font-weight: 500; }
+    #send-btn:hover { background: var(--teal-dark); }
+    #result-panel { border-top: 0.5px solid var(--border); background: var(--bg2); max-height: 260px; display: none; flex-direction: column; flex-shrink: 0; }
     #result-panel.on { display: flex; }
-    #rh { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; border-bottom: 0.5px solid var(--border); }
+    #rh { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
     #rh span { font-size: 11px; font-weight: 500; color: var(--txt); }
-    #rh button { font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); cursor: pointer; margin-left: 5px; font-family: var(--mono); }
-    #rh button:hover { background: var(--bg3); }
+    .act-btn { font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); cursor: pointer; margin-left: 5px; font-family: var(--mono); }
+    .act-btn:hover { background: var(--bg3); }
     #rw { overflow: auto; flex: 1; padding: 0 14px 10px; }
-    table.rt { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 7px; font-family: var(--mono); }
+    table.rt { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 7px; font-family: var(--mono); table-layout: fixed; }
     table.rt th { font-weight: 500; color: var(--txt2); padding: 5px 7px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; }
-    table.rt td { padding: 5px 7px; border-bottom: 0.5px solid var(--border); color: var(--txt); }
+    table.rt td { padding: 5px 7px; border-bottom: 0.5px solid var(--border); color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     table.rt tr:last-child td { border-bottom: none; }
-    .badge { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+    .badge { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
     .badge.ok { background: var(--teal-light); color: var(--teal-text); }
     .badge.parcial { background: var(--amber-light); color: var(--amber-text); }
     .badge.nao { background: var(--red-light); color: var(--red-text); }
@@ -91,10 +84,11 @@
     input[type=file] { display: none; }
     .sample-btn { display: inline-block; margin-top: 7px; font-size: 10px; padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); cursor: pointer; font-family: var(--mono); }
     .sample-btn:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal-text); }
-    #backend-url-row { margin: 0 12px 8px; display: flex; flex-direction: column; gap: 4px; }
-    #backend-url-row label { font-size: 10px; color: var(--txt2); }
-    #backend-url-row input { font-size: 11px; padding: 6px 9px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); font-family: var(--mono); }
-    #backend-url-row input:focus { outline: none; border-color: var(--teal); }
+    @media (max-width: 640px) {
+      #app { flex-direction: column; height: auto; min-height: 100vh; border-radius: 0; }
+      #sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 0.5px solid var(--border); }
+      #main { min-height: 500px; }
+    }
   </style>
 </head>
 <body>
@@ -103,12 +97,6 @@
     <div class="sb-head">
       <h2>Validador de Documentos</h2>
       <p>powered by Claude AI</p>
-    </div>
-
-    <div class="sec">Servidor backend</div>
-    <div id="backend-url-row">
-      <label>URL do backend</label>
-      <input type="text" id="backend-url" value="http://localhost:8000" placeholder="http://localhost:8000">
     </div>
 
     <div class="sec">Campos extraídos pela IA</div>
@@ -127,6 +115,9 @@
     </div>
     <div id="db-stats"></div>
     <div id="db-preview"></div>
+    <div style="padding: 0 12px 12px;">
+      <button class="sample-btn" style="width:100%;text-align:center" onclick="loadSampleDB()">Carregar base de exemplo</button>
+    </div>
   </div>
 
   <div id="main">
@@ -134,12 +125,8 @@
     <div id="chat-area">
       <div class="msg bot">
         <div class="bubble">
-          Olá! Sou seu analisador inteligente de documentos com IA.<br><br>
-          <strong>Para começar:</strong><br>
-          1. Suba o backend localmente (veja o README)<br>
-          2. Carregue sua base de dados (CSV/Excel)<br>
-          3. Envie seu PDF ou Excel — a IA extrai tudo automaticamente<br><br>
-          <button class="sample-btn" onclick="loadSampleDB()">Carregar base de exemplo</button>
+          Olá! Sou seu analisador inteligente de documentos.<br><br>
+          Carregue sua <strong>base de dados</strong> na barra lateral e envie um <strong>PDF ou Excel</strong>. A IA extrai nomes e valores automaticamente e preenche o departamento.
         </div>
         <span class="msg-time">agora</span>
       </div>
@@ -158,15 +145,15 @@
 
     <div id="input-row">
       <input type="text" id="ci" placeholder="Pergunte sobre os resultados..." onkeydown="if(event.key==='Enter')chatAI()">
-      <button onclick="chatAI()">enviar</button>
+      <button id="send-btn" onclick="chatAI()">enviar</button>
     </div>
 
     <div id="result-panel">
       <div id="rh">
         <span id="rt-title">resultados</span>
         <div>
-          <button onclick="exportCSV()">exportar CSV</button>
-          <button onclick="document.getElementById('result-panel').classList.remove('on')">fechar</button>
+          <button class="act-btn" onclick="exportCSV()">exportar CSV</button>
+          <button class="act-btn" onclick="document.getElementById('result-panel').classList.remove('on')">fechar</button>
         </div>
       </div>
       <div id="rw"><div id="rt"></div></div>
@@ -176,6 +163,9 @@
 
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  // Caminho relativo — funciona no Railway pois frontend e backend são o mesmo servidor
+  const API = '';
 
   let dbData = null, resultData = [];
 
@@ -189,10 +179,6 @@
     { nome: 'Beatriz Nunes Rodrigues', departamento: 'Jurídico', cargo: 'Advogada' },
     { nome: 'Thiago Barbosa Silva', departamento: 'Financeiro', cargo: 'Analista' },
   ];
-
-  function getBackendURL() {
-    return (document.getElementById('backend-url').value || 'http://localhost:8000').replace(/\/$/, '');
-  }
 
   function loadSampleDB() {
     dbData = SAMPLE_DB;
@@ -260,17 +246,17 @@
       form.append('text', text.slice(0, 8000));
       form.append('filename', file.name);
 
-      const resp = await fetch(`${getBackendURL()}/extract`, { method: 'POST', body: form });
+      const resp = await fetch(`${API}/extract`, { method: 'POST', body: form });
       if (!resp.ok) {
-        const err = await resp.json();
+        const err = await resp.json().catch(() => ({}));
         throw new Error(err.detail || `Erro ${resp.status}`);
       }
       const data = await resp.json();
-      const extracted = data.records;
       setProgress(80);
 
+      const extracted = data.records;
       if (!extracted || !extracted.length) {
-        addBot('A IA não encontrou registros com nome e valor no documento.'); setProgress(0); return;
+        addBot('A IA não encontrou registros com nome e valor neste documento.'); setProgress(0); return;
       }
 
       const crossed = crossWithDB(extracted);
@@ -282,8 +268,8 @@
       const nNao = crossed.filter(r => r.status === 'nao_encontrado').length;
 
       addBot(`Análise completa! <strong>${crossed.length} registros</strong>.<br>` +
-        `<span style="color:#085041">✓ ${nEx} exato</span> · ` +
-        `<span style="color:#633806">~ ${nPar} parcial</span> · ` +
+        `<span style="color:var(--teal-text)">✓ ${nEx} exato</span> · ` +
+        `<span style="color:var(--amber-text)">~ ${nPar} parcial</span> · ` +
         `<span style="color:#A32D2D">✗ ${nNao} não encontrado</span>`);
       renderTable(crossed, file.name);
       setTimeout(() => setProgress(0), 800);
@@ -321,8 +307,7 @@
           let text = '';
           wb.SheetNames.forEach(name => {
             const ws = wb.Sheets[name];
-            const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-            rows.forEach(row => { text += row.join('\t') + '\n'; });
+            XLSX.utils.sheet_to_json(ws, { header: 1 }).forEach(row => { text += row.join('\t') + '\n'; });
           });
           resolve(text);
         } catch (e) { reject(e); }
@@ -370,10 +355,11 @@
     document.getElementById('rt-title').textContent = `${data.length} registros — ${fname}`;
     const cols = ['nome_doc', 'valor', 'status', 'nome_banco', 'departamento'];
     const labels = { nome_doc: 'Nome (documento)', valor: 'Valor', status: 'Validação', nome_banco: 'Nome oficial', departamento: 'Departamento' };
-    const thead = '<tr>' + cols.map(c => `<th>${labels[c]}</th>`).join('') + '</tr>';
+    const widths = { nome_doc: '22%', valor: '13%', status: '12%', nome_banco: '25%', departamento: '18%' };
+    const thead = '<colgroup>' + cols.map(c => `<col style="width:${widths[c]}">`).join('') + '</colgroup><tr>' + cols.map(c => `<th>${labels[c]}</th>`).join('') + '</tr>';
     const tbody = data.map(r => {
       const b = r.status === 'exato' ? '<span class="badge ok">exato</span>' : r.status === 'parcial' ? '<span class="badge parcial">parcial</span>' : '<span class="badge nao">não encontrado</span>';
-      return '<tr>' + `<td>${r.nome_doc}</td><td>${r.valor}</td><td>${b}</td><td>${r.nome_banco}</td><td>${r.departamento}</td>` + '</tr>';
+      return '<tr>' + `<td title="${r.nome_doc}">${r.nome_doc}</td><td>${r.valor}</td><td>${b}</td><td title="${r.nome_banco}">${r.nome_banco}</td><td>${r.departamento}</td>` + '</tr>';
     }).join('');
     document.getElementById('rt').innerHTML = `<table class="rt"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
     document.getElementById('result-panel').classList.add('on');
@@ -385,16 +371,15 @@
     addUser(v); inp.value = '';
     showTyping();
     try {
-      const ctx = resultData.length ? `Dados: ${JSON.stringify(resultData.slice(0, 20))}. ` : '';
+      const ctx = resultData.length ? `Dados processados: ${JSON.stringify(resultData.slice(0, 20))}. ` : '';
       const form = new FormData();
       form.append('question', v);
       form.append('context', ctx);
-      const resp = await fetch(`${getBackendURL()}/chat`, { method: 'POST', body: form });
+      const resp = await fetch(`${API}/chat`, { method: 'POST', body: form });
       removeTyping();
       if (!resp.ok) { addBot('Erro ao consultar a IA.'); return; }
-      const data = await resp.json();
-      addBot(data.answer);
-    } catch (e) { removeTyping(); addBot(`Erro de conexão: ${e.message}`); }
+      addBot((await resp.json()).answer);
+    } catch (e) { removeTyping(); addBot(`Erro: ${e.message}`); }
   }
 
   function exportCSV() {
@@ -408,7 +393,6 @@
   }
 
   function setProgress(p) { document.getElementById('prog-bar').style.width = p + '%'; }
-
   function addBot(html) {
     const c = document.getElementById('chat-area');
     const d = document.createElement('div'); d.className = 'msg bot';
