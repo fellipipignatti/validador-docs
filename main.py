@@ -1,11 +1,10 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import httpx
-import os
-import io
+from fastapi.responses import JSONResponse, HTMLResponse
+import httpx, os, json
+from pathlib import Path
 
-app = FastAPI(title="Document Validator API")
+app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,6 +15,10 @@ app.add_middleware(
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
+
+# Caminho absoluto do index.html (mesmo diretório do main.py)
+BASE_DIR = Path(__file__).parent
+INDEX_PATH = BASE_DIR / "index.html"
 
 
 async def call_claude(prompt: str) -> str:
@@ -36,46 +39,44 @@ async def call_claude(prompt: str) -> str:
             },
         )
         resp.raise_for_status()
-        data = resp.json()
-        return data["content"][0]["text"]
+        return resp.json()["content"][0]["text"]
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    if not INDEX_PATH.exists():
+        raise HTTPException(status_code=404, detail=f"index.html não encontrado em {INDEX_PATH}")
+    return HTMLResponse(content=INDEX_PATH.read_text(encoding="utf-8"))
 
 
 @app.post("/extract")
-async def extract_from_text(text: str = Form(...), filename: str = Form("")):
-    """Recebe texto extraído do documento e pede à IA para identificar nomes e valores."""
-    prompt = f"""Você é um extrator de dados de documentos. Analise o texto abaixo e extraia TODOS os registros que contenham um NOME DE PESSOA e um VALOR MONETÁRIO.
+async def extract(text: str = Form(...), filename: str = Form("")):
+    prompt = f"""Analise o texto e extraia TODOS os pares de NOME DE PESSOA e VALOR MONETÁRIO.
+Retorne APENAS JSON válido, sem markdown, sem explicação:
+[{{"nome":"Nome da Pessoa","valor":"R$ 0,00"}}]
+Se não encontrar nenhum, retorne [].
 
-Retorne APENAS um JSON válido, sem markdown, sem explicação, neste formato exato:
-[{{"nome":"Nome Completo da Pessoa","valor":"R$ 0,00"}}]
-
-Regras:
-- Extraia todos os pares nome+valor que encontrar
-- Preserve o nome exatamente como aparece no documento
-- Preserve o valor com sua formatação original
-- Se não encontrar nenhum registro, retorne []
-- Retorne APENAS o JSON, nada mais
-
-Texto do documento ({filename}):
+Texto ({filename}):
 {text[:8000]}"""
-
     result = await call_claude(prompt)
     result = result.replace("```json", "").replace("```", "").strip()
     try:
-        import json
-        parsed = json.loads(result)
-        return JSONResponse(content={"records": parsed})
+        return JSONResponse({"records": json.loads(result)})
     except Exception:
-        raise HTTPException(status_code=422, detail="IA retornou formato inesperado.")
+        raise HTTPException(status_code=422, detail="Formato inválido retornado pela IA.")
 
 
 @app.post("/chat")
 async def chat(question: str = Form(...), context: str = Form("")):
-    """Chat livre sobre os dados processados."""
     prompt = f"{context}\nPergunta: {question}\nResponda em português de forma concisa."
-    result = await call_claude(prompt)
-    return JSONResponse(content={"answer": result})
+    return JSONResponse({"answer": await call_claude(prompt)})
 
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "key_configured": bool(ANTHROPIC_API_KEY)}
+    return {
+        "status": "ok",
+        "key_configured": bool(ANTHROPIC_API_KEY),
+        "index_found": INDEX_PATH.exists(),
+        "index_path": str(INDEX_PATH),
+    }
