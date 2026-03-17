@@ -10,84 +10,101 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --teal: #1D9E75; --teal-dark: #0F6E56; --teal-light: #E1F5EE; --teal-text: #085041;
-      --amber-light: #FAEEDA; --amber-text: #633806;
-      --red-light: #FCEBEB; --red-text: #501313;
-      --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeede9;
-      --txt: #1a1a18; --txt2: #5f5e5a; --txt3: #9a9994;
-      --border: rgba(0,0,0,0.1);
-      --mono: 'DM Mono', monospace; --serif: 'Lora', Georgia, serif;
-      --radius: 8px;
+      --teal:#1D9E75; --teal-dark:#0F6E56; --teal-light:#E1F5EE; --teal-text:#085041;
+      --amber-light:#FAEEDA; --amber-text:#633806;
+      --red-light:#FCEBEB; --red-text:#501313;
+      --bg:#ffffff; --bg2:#f5f5f3; --bg3:#eeede9;
+      --txt:#1a1a18; --txt2:#5f5e5a; --txt3:#9a9994;
+      --border:rgba(0,0,0,0.1);
+      --mono:'DM Mono',monospace; --serif:'Lora',Georgia,serif;
+      --radius:8px;
     }
-    body { font-family: var(--mono); background: var(--bg2); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    #app { display: flex; width: 100%; max-width: 980px; height: 700px; border-radius: 14px; overflow: hidden; border: 0.5px solid var(--border); background: var(--bg); box-shadow: 0 4px 40px rgba(0,0,0,0.1); }
-    #sidebar { width: 258px; min-width: 258px; border-right: 0.5px solid var(--border); display: flex; flex-direction: column; background: var(--bg2); overflow-y: auto; }
-    .sb-head { padding: 16px; border-bottom: 0.5px solid var(--border); }
-    .sb-head h2 { font-size: 14px; font-weight: 500; color: var(--txt); font-family: var(--serif); }
-    .sb-head p { font-size: 10px; color: var(--txt3); margin-top: 3px; }
-    .sec { font-size: 9px; font-weight: 500; color: var(--txt3); text-transform: uppercase; letter-spacing: 0.08em; padding: 12px 16px 5px; }
-    .chip { display: flex; align-items: center; gap: 7px; margin: 0 12px 5px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 6px 10px; font-size: 11px; color: var(--txt); }
-    .chip .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .chip .tag { margin-left: auto; font-size: 9px; color: var(--txt3); }
-    #db-zone { margin: 0 12px 6px; border: 0.5px dashed var(--border); border-radius: var(--radius); padding: 12px; text-align: center; cursor: pointer; transition: all .15s; }
-    #db-zone:hover { background: var(--bg); }
-    #db-zone.loaded { border-style: solid; border-color: var(--teal); }
-    #db-zone p { font-size: 11px; color: var(--txt2); }
-    #db-zone.loaded p { color: var(--teal-text); font-weight: 500; }
-    #db-zone small { font-size: 9px; color: var(--txt3); }
-    #db-stats { font-size: 10px; color: var(--txt3); padding: 0 16px 4px; }
-    #db-preview { margin: 0 12px 8px; overflow: auto; max-height: 120px; }
-    #db-preview table { width: 100%; border-collapse: collapse; font-size: 9px; }
-    #db-preview th { color: var(--txt3); padding: 3px 4px; border-bottom: 0.5px solid var(--border); font-weight: 500; white-space: nowrap; }
-    #db-preview td { color: var(--txt2); padding: 3px 4px; border-bottom: 0.5px solid var(--border); white-space: nowrap; overflow: hidden; max-width: 80px; text-overflow: ellipsis; }
-    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    #prog { height: 2px; background: var(--bg3); flex-shrink: 0; }
-    #prog-bar { height: 100%; width: 0; background: var(--teal); transition: width .4s; }
-    #chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-    .msg { max-width: 88%; display: flex; flex-direction: column; gap: 3px; }
-    .msg.bot { align-self: flex-start; }
-    .msg.user { align-self: flex-end; }
-    .bubble { padding: 10px 13px; font-size: 12px; line-height: 1.6; font-family: var(--mono); }
-    .msg.bot .bubble { background: var(--bg2); border: 0.5px solid var(--border); border-radius: 3px 12px 12px 12px; color: var(--txt); }
-    .msg.user .bubble { background: var(--teal); color: #fff; border-radius: 12px 3px 12px 12px; }
-    .msg-time { font-size: 9px; color: var(--txt3); }
-    .msg.user .msg-time { text-align: right; }
-    #drop-zone { margin: 0 14px 10px; border: 0.5px dashed var(--border); border-radius: var(--radius); padding: 15px; text-align: center; cursor: pointer; background: var(--bg2); transition: all .15s; position: relative; }
-    #drop-zone:hover, #drop-zone.drag { background: var(--bg); border-color: var(--teal); }
-    #drop-zone p { font-size: 12px; color: var(--txt2); }
-    #drop-zone small { font-size: 10px; color: var(--txt3); }
-    .ai-badge { position: absolute; top: 8px; right: 10px; font-size: 9px; background: var(--teal-light); color: var(--teal-text); padding: 2px 7px; border-radius: 20px; font-weight: 500; }
-    #input-row { display: flex; gap: 8px; padding: 10px 14px; border-top: 0.5px solid var(--border); flex-shrink: 0; }
-    #input-row input { flex: 1; font-size: 12px; padding: 7px 11px; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); font-family: var(--mono); }
-    #input-row input:focus { outline: none; border-color: var(--teal); }
-    #send-btn { font-size: 12px; padding: 7px 14px; border-radius: var(--radius); border: none; background: var(--teal); color: #fff; cursor: pointer; font-family: var(--mono); font-weight: 500; }
-    #send-btn:hover { background: var(--teal-dark); }
-    #result-panel { border-top: 0.5px solid var(--border); background: var(--bg2); max-height: 260px; display: none; flex-direction: column; flex-shrink: 0; }
-    #result-panel.on { display: flex; }
-    #rh { display: flex; align-items: center; justify-content: space-between; padding: 7px 14px; border-bottom: 0.5px solid var(--border); flex-shrink: 0; }
-    #rh span { font-size: 11px; font-weight: 500; color: var(--txt); }
-    .act-btn { font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); cursor: pointer; margin-left: 5px; font-family: var(--mono); }
-    .act-btn:hover { background: var(--bg3); }
-    #rw { overflow: auto; flex: 1; padding: 0 14px 10px; }
-    table.rt { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 7px; font-family: var(--mono); table-layout: fixed; }
-    table.rt th { font-weight: 500; color: var(--txt2); padding: 5px 7px; border-bottom: 0.5px solid var(--border); text-align: left; white-space: nowrap; }
-    table.rt td { padding: 5px 7px; border-bottom: 0.5px solid var(--border); color: var(--txt); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    table.rt tr:last-child td { border-bottom: none; }
-    .badge { display: inline-block; font-size: 9px; padding: 2px 7px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
-    .badge.ok { background: var(--teal-light); color: var(--teal-text); }
-    .badge.parcial { background: var(--amber-light); color: var(--amber-text); }
-    .badge.nao { background: var(--red-light); color: var(--red-text); }
-    .typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--txt3); display: inline-block; margin: 0 2px; animation: bl 1.2s infinite; }
-    .typing span:nth-child(2) { animation-delay: .2s; }
-    .typing span:nth-child(3) { animation-delay: .4s; }
+    body { font-family:var(--mono); background:var(--bg2); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:16px; }
+    #app { display:flex; width:100%; max-width:1060px; height:720px; border-radius:14px; overflow:hidden; border:0.5px solid var(--border); background:var(--bg); box-shadow:0 4px 40px rgba(0,0,0,0.1); }
+    #sidebar { width:258px; min-width:258px; border-right:0.5px solid var(--border); display:flex; flex-direction:column; background:var(--bg2); overflow-y:auto; }
+    .sb-head { padding:16px; border-bottom:0.5px solid var(--border); }
+    .sb-head h2 { font-size:14px; font-weight:500; color:var(--txt); font-family:var(--serif); }
+    .sb-head p { font-size:10px; color:var(--txt3); margin-top:3px; }
+    .sec { font-size:9px; font-weight:500; color:var(--txt3); text-transform:uppercase; letter-spacing:0.08em; padding:12px 16px 5px; }
+    .chip { display:flex; align-items:center; gap:7px; margin:0 12px 5px; background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius); padding:6px 10px; font-size:11px; color:var(--txt); }
+    .chip .dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .chip .tag { margin-left:auto; font-size:9px; color:var(--txt3); }
+    #db-zone { margin:0 12px 6px; border:0.5px dashed var(--border); border-radius:var(--radius); padding:12px; text-align:center; cursor:pointer; transition:all .15s; }
+    #db-zone:hover { background:var(--bg); }
+    #db-zone.loaded { border-style:solid; border-color:var(--teal); }
+    #db-zone p { font-size:11px; color:var(--txt2); }
+    #db-zone.loaded p { color:var(--teal-text); font-weight:500; }
+    #db-zone small { font-size:9px; color:var(--txt3); }
+    #db-stats { font-size:10px; color:var(--txt3); padding:0 16px 4px; }
+    #db-preview { margin:0 12px 8px; overflow:auto; max-height:120px; }
+    #db-preview table { width:100%; border-collapse:collapse; font-size:9px; }
+    #db-preview th { color:var(--txt3); padding:3px 4px; border-bottom:0.5px solid var(--border); font-weight:500; white-space:nowrap; }
+    #db-preview td { color:var(--txt2); padding:3px 4px; border-bottom:0.5px solid var(--border); white-space:nowrap; overflow:hidden; max-width:80px; text-overflow:ellipsis; }
+    #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    #prog { height:3px; background:var(--bg3); flex-shrink:0; }
+    #prog-bar { height:100%; width:0; background:var(--teal); transition:width .4s; }
+    #chat-area { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+    .msg { max-width:90%; display:flex; flex-direction:column; gap:3px; }
+    .msg.bot { align-self:flex-start; }
+    .msg.user { align-self:flex-end; }
+    .bubble { padding:10px 13px; font-size:12px; line-height:1.6; font-family:var(--mono); }
+    .msg.bot .bubble { background:var(--bg2); border:0.5px solid var(--border); border-radius:3px 12px 12px 12px; color:var(--txt); }
+    .msg.user .bubble { background:var(--teal); color:#fff; border-radius:12px 3px 12px 12px; }
+    .msg-time { font-size:9px; color:var(--txt3); }
+    .msg.user .msg-time { text-align:right; }
+    #drop-zone { margin:0 14px 8px; border:0.5px dashed var(--border); border-radius:var(--radius); padding:14px; text-align:center; cursor:pointer; background:var(--bg2); transition:all .15s; position:relative; }
+    #drop-zone:hover, #drop-zone.drag { background:var(--bg); border-color:var(--teal); }
+    #drop-zone p { font-size:12px; color:var(--txt2); }
+    #drop-zone small { font-size:10px; color:var(--txt3); }
+    .ai-badge { position:absolute; top:8px; right:10px; font-size:9px; background:var(--teal-light); color:var(--teal-text); padding:2px 7px; border-radius:20px; font-weight:500; }
+    #file-queue { margin:0 14px 6px; display:flex; flex-direction:column; gap:5px; max-height:120px; overflow-y:auto; }
+    .file-item { display:flex; align-items:center; gap:8px; background:var(--bg); border:0.5px solid var(--border); border-radius:var(--radius); padding:6px 10px; font-size:11px; flex-shrink:0; }
+    .file-item .fname { flex:1; color:var(--txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .file-item .fstatus { font-size:10px; color:var(--txt3); white-space:nowrap; }
+    .file-item .fstatus.ok { color:var(--teal-text); }
+    .file-item .fstatus.err { color:var(--red-text); }
+    .file-item .fstatus.processing { color:var(--amber-text); }
+    .file-item .fremove { cursor:pointer; color:var(--txt3); font-size:14px; line-height:1; padding:0 2px; }
+    .file-item .fremove:hover { color:var(--red-text); }
+    .file-ext { font-size:9px; padding:2px 5px; border-radius:4px; background:var(--bg3); color:var(--txt3); font-weight:500; flex-shrink:0; }
+    #queue-actions { margin:0 14px 8px; display:flex; gap:6px; }
+    #queue-actions button { flex:1; font-size:11px; padding:7px; border-radius:var(--radius); border:0.5px solid var(--border); background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--mono); transition:all .15s; }
+    #process-btn { background:var(--teal) !important; color:#fff !important; border-color:var(--teal) !important; }
+    #process-btn:hover { background:var(--teal-dark) !important; }
+    #queue-actions button:hover { background:var(--bg2); }
+    #process-btn:disabled { opacity:0.5; cursor:not-allowed; }
+    #input-row { display:flex; gap:8px; padding:10px 14px; border-top:0.5px solid var(--border); flex-shrink:0; }
+    #input-row input { flex:1; font-size:12px; padding:7px 11px; border-radius:var(--radius); border:0.5px solid var(--border); background:var(--bg); color:var(--txt); font-family:var(--mono); }
+    #input-row input:focus { outline:none; border-color:var(--teal); }
+    #send-btn { font-size:12px; padding:7px 14px; border-radius:var(--radius); border:none; background:var(--teal); color:#fff; cursor:pointer; font-family:var(--mono); font-weight:500; }
+    #send-btn:hover { background:var(--teal-dark); }
+    #result-panel { border-top:0.5px solid var(--border); background:var(--bg2); max-height:280px; display:none; flex-direction:column; flex-shrink:0; }
+    #result-panel.on { display:flex; }
+    #rh { display:flex; align-items:center; justify-content:space-between; padding:7px 14px; border-bottom:0.5px solid var(--border); flex-shrink:0; }
+    #rh span { font-size:11px; font-weight:500; color:var(--txt); }
+    .act-btn { font-size:10px; padding:3px 8px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg); color:var(--txt); cursor:pointer; margin-left:5px; font-family:var(--mono); }
+    .act-btn:hover { background:var(--bg3); }
+    #rw { overflow:auto; flex:1; padding:0 14px 10px; }
+    table.rt { width:100%; border-collapse:collapse; font-size:11px; margin-top:7px; font-family:var(--mono); table-layout:fixed; }
+    table.rt th { font-weight:500; color:var(--txt2); padding:5px 7px; border-bottom:0.5px solid var(--border); text-align:left; white-space:nowrap; }
+    table.rt td { padding:5px 7px; border-bottom:0.5px solid var(--border); color:var(--txt); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    table.rt tr:last-child td { border-bottom:none; }
+    .badge { display:inline-block; font-size:9px; padding:2px 7px; border-radius:20px; font-weight:500; white-space:nowrap; }
+    .badge.ok { background:var(--teal-light); color:var(--teal-text); }
+    .badge.parcial { background:var(--amber-light); color:var(--amber-text); }
+    .badge.nao { background:var(--red-light); color:var(--red-text); }
+    .typing span { width:5px; height:5px; border-radius:50%; background:var(--txt3); display:inline-block; margin:0 2px; animation:bl 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay:.2s; }
+    .typing span:nth-child(3) { animation-delay:.4s; }
     @keyframes bl { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
-    input[type=file] { display: none; }
-    .sample-btn { display: inline-block; margin-top: 7px; font-size: 10px; padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--border); background: var(--bg); color: var(--txt); cursor: pointer; font-family: var(--mono); }
-    .sample-btn:hover { background: var(--teal-light); border-color: var(--teal); color: var(--teal-text); }
-    @media (max-width: 640px) {
-      #app { flex-direction: column; height: auto; min-height: 100vh; border-radius: 0; }
-      #sidebar { width: 100%; min-width: unset; border-right: none; border-bottom: 0.5px solid var(--border); }
-      #main { min-height: 500px; }
+    input[type=file] { display:none; }
+    .sample-btn { display:inline-block; margin-top:7px; font-size:10px; padding:4px 10px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--mono); }
+    .sample-btn:hover { background:var(--teal-light); border-color:var(--teal); color:var(--teal-text); }
+    .sum-row td { font-weight:500; border-top:0.5px solid var(--border); color:var(--teal-text); }
+    @media (max-width:640px) {
+      #app { flex-direction:column; height:auto; min-height:100vh; border-radius:0; }
+      #sidebar { width:100%; min-width:unset; border-right:none; border-bottom:0.5px solid var(--border); }
+      #main { min-height:500px; }
     }
   </style>
 </head>
@@ -99,13 +116,10 @@
       <p>powered by Claude AI</p>
     </div>
 
-    <div class="sec">Campos extraídos pela IA</div>
-    <div class="chip"><div class="dot" style="background:#1D9E75"></div>Nome completo<span class="tag">chave</span></div>
-    <div class="chip"><div class="dot" style="background:#378ADD"></div>Valor<span class="tag">numérico</span></div>
-
-    <div class="sec">Completado pelo banco</div>
-    <div class="chip"><div class="dot" style="background:#D85A30"></div>Departamento<span class="tag">do banco</span></div>
-    <div class="chip"><div class="dot" style="background:#7F77DD"></div>Nome oficial<span class="tag">normalizado</span></div>
+    <div class="sec">O que a IA faz</div>
+    <div class="chip"><div class="dot" style="background:#1D9E75"></div>Extrai nomes próprios<span class="tag">automático</span></div>
+    <div class="chip"><div class="dot" style="background:#378ADD"></div>Soma valores por pessoa<span class="tag">agrega</span></div>
+    <div class="chip"><div class="dot" style="background:#D85A30"></div>Busca departamento<span class="tag">do banco</span></div>
 
     <div class="sec">Base de dados</div>
     <div id="db-zone" onclick="document.getElementById('db-in').click()">
@@ -115,7 +129,7 @@
     </div>
     <div id="db-stats"></div>
     <div id="db-preview"></div>
-    <div style="padding: 0 12px 12px;">
+    <div style="padding:0 12px 12px">
       <button class="sample-btn" style="width:100%;text-align:center" onclick="loadSampleDB()">Carregar base de exemplo</button>
     </div>
   </div>
@@ -125,8 +139,11 @@
     <div id="chat-area">
       <div class="msg bot">
         <div class="bubble">
-          Olá! Sou seu analisador inteligente de documentos.<br><br>
-          Carregue sua <strong>base de dados</strong> na barra lateral e envie um <strong>PDF ou Excel</strong>. A IA extrai nomes e valores automaticamente e preenche o departamento.
+          Olá! Envie seus documentos e a IA vai:<br><br>
+          1. Varrer cada arquivo buscando <strong>todos os nomes próprios</strong><br>
+          2. Se o mesmo nome aparecer várias vezes, <strong>somar os valores</strong><br>
+          3. Buscar cada nome no banco e trazer o <strong>departamento</strong><br><br>
+          Carregue a base de dados e adicione seus arquivos na fila.
         </div>
         <span class="msg-time">agora</span>
       </div>
@@ -138,9 +155,15 @@
       ondragleave="this.classList.remove('drag')"
       ondrop="onDrop(event)">
       <span class="ai-badge">IA ativa</span>
-      <p>Arraste ou clique para enviar PDF / Excel</p>
-      <small>Notas fiscais, relatórios, planilhas de pagamento — qualquer formato</small>
-      <input type="file" id="doc-in" accept=".pdf,.xlsx,.xls,.csv" onchange="onFile(event)">
+      <p>Arraste ou clique para adicionar arquivos</p>
+      <small>Vários de uma vez — PDF, Excel ou CSV</small>
+      <input type="file" id="doc-in" accept=".pdf,.xlsx,.xls,.csv" multiple onchange="onFiles(event)">
+    </div>
+
+    <div id="file-queue"></div>
+    <div id="queue-actions" style="display:none">
+      <button onclick="clearQueue()">limpar fila</button>
+      <button id="process-btn" onclick="processAll()">processar tudo</button>
     </div>
 
     <div id="input-row">
@@ -163,21 +186,18 @@
 
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-  // Caminho relativo — funciona no Railway pois frontend e backend são o mesmo servidor
   const API = '';
-
-  let dbData = null, resultData = [];
+  let dbData = null, resultData = [], fileQueue = [];
 
   const SAMPLE_DB = [
-    { nome: 'Ana Paula Ferreira', departamento: 'Recursos Humanos', cargo: 'Analista' },
-    { nome: 'Carlos Eduardo Souza', departamento: 'Financeiro', cargo: 'Gerente' },
-    { nome: 'Mariana Lima Costa', departamento: 'TI', cargo: 'Desenvolvedora' },
-    { nome: 'João Roberto Oliveira', departamento: 'Comercial', cargo: 'Diretor' },
-    { nome: 'Fernanda Santos Alves', departamento: 'Marketing', cargo: 'Coordenadora' },
-    { nome: 'Rafael Mendes Pereira', departamento: 'Operações', cargo: 'Supervisor' },
-    { nome: 'Beatriz Nunes Rodrigues', departamento: 'Jurídico', cargo: 'Advogada' },
-    { nome: 'Thiago Barbosa Silva', departamento: 'Financeiro', cargo: 'Analista' },
+    {nome:'Ana Paula Ferreira',departamento:'Recursos Humanos'},
+    {nome:'Carlos Eduardo Souza',departamento:'Financeiro'},
+    {nome:'Mariana Lima Costa',departamento:'TI'},
+    {nome:'João Roberto Oliveira',departamento:'Comercial'},
+    {nome:'Fernanda Santos Alves',departamento:'Marketing'},
+    {nome:'Rafael Mendes Pereira',departamento:'Operações'},
+    {nome:'Beatriz Nunes Rodrigues',departamento:'Jurídico'},
+    {nome:'Thiago Barbosa Silva',departamento:'Financeiro'},
   ];
 
   function loadSampleDB() {
@@ -185,7 +205,7 @@
     renderDBPreview();
     document.getElementById('db-lbl').textContent = '✓ base_colaboradores (8 registros)';
     document.getElementById('db-zone').classList.add('loaded');
-    addBot('Base de exemplo carregada com <strong>8 colaboradores</strong>. Agora envie um documento!');
+    addBot('Base de exemplo carregada com <strong>8 colaboradores</strong>. Adicione seus arquivos!');
   }
 
   function loadDB(e) {
@@ -193,14 +213,14 @@
     const r = new FileReader();
     r.onload = ev => {
       try {
-        const wb = XLSX.read(ev.target.result, { type: 'array' });
+        const wb = XLSX.read(ev.target.result, {type:'array'});
         const ws = wb.Sheets[wb.SheetNames[0]];
         dbData = XLSX.utils.sheet_to_json(ws);
         document.getElementById('db-lbl').textContent = `✓ ${f.name} (${dbData.length} reg.)`;
         document.getElementById('db-zone').classList.add('loaded');
         renderDBPreview();
         addBot(`Base <strong>${f.name}</strong> carregada: ${dbData.length} registros.`);
-      } catch (err) { addBot('Erro ao ler a base de dados.'); }
+      } catch(err) { addBot('Erro ao ler a base de dados.'); }
     };
     r.readAsArrayBuffer(f);
   }
@@ -209,8 +229,8 @@
     if (!dbData || !dbData.length) return;
     const cols = Object.keys(dbData[0]);
     const rows = dbData.slice(0, 3);
-    let h = '<table><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-    h += rows.map(r => '<tr>' + cols.map(c => `<td>${r[c] || ''}</td>`).join('') + '</tr>').join('');
+    let h = '<table><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+    h += rows.map(r=>'<tr>'+cols.map(c=>`<td>${r[c]||''}</td>`).join('')+'</tr>').join('');
     h += '</tbody></table>';
     document.getElementById('db-preview').innerHTML = h;
     document.getElementById('db-stats').textContent = `${dbData.length} registros · ${cols.length} colunas`;
@@ -219,63 +239,183 @@
   function onDrop(e) {
     e.preventDefault();
     document.getElementById('drop-zone').classList.remove('drag');
-    const f = e.dataTransfer.files[0]; if (f) handleDoc(f);
+    addFilesToQueue(Array.from(e.dataTransfer.files));
   }
-  function onFile(e) { const f = e.target.files[0]; if (f) handleDoc(f); }
+  function onFiles(e) { addFilesToQueue(Array.from(e.target.files)); e.target.value=''; }
 
-  async function handleDoc(file) {
+  function addFilesToQueue(files) {
+    const allowed = ['pdf','xlsx','xls','csv'];
+    files.forEach(f => {
+      const ext = f.name.split('.').pop().toLowerCase();
+      if (!allowed.includes(ext)) return;
+      if (fileQueue.find(q => q.name === f.name)) return;
+      fileQueue.push({file:f, name:f.name, ext, status:'aguardando'});
+    });
+    renderQueue();
+  }
+
+  function renderQueue() {
+    const el = document.getElementById('file-queue');
+    const actions = document.getElementById('queue-actions');
+    if (!fileQueue.length) { el.innerHTML=''; actions.style.display='none'; return; }
+    actions.style.display = 'flex';
+    el.innerHTML = fileQueue.map((f,i) => {
+      const sc = f.status==='ok'?'ok':f.status==='erro'?'err':f.status==='processando'?'processing':'';
+      const sl = f.status==='aguardando'?'aguardando':f.status==='processando'?'processando...':f.status==='ok'?'✓ concluído':'✗ erro';
+      return `<div class="file-item">
+        <span class="file-ext">${f.ext.toUpperCase()}</span>
+        <span class="fname" title="${f.name}">${f.name}</span>
+        <span class="fstatus ${sc}">${sl}</span>
+        ${f.status!=='processando'?`<span class="fremove" onclick="removeFromQueue(${i})">×</span>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  function removeFromQueue(i) { fileQueue.splice(i,1); renderQueue(); }
+  function clearQueue() { fileQueue=fileQueue.filter(f=>f.status==='processando'); renderQueue(); }
+
+  // Converte string de valor para número
+  function parseValor(v) {
+    if (!v || v === '—' || v === null) return 0;
+    const s = String(v).replace(/[^0-9,\.]/g,'');
+    // Formato BR: 1.234,56 → 1234.56
+    if (s.includes(',')) return parseFloat(s.replace(/\./g,'').replace(',','.')) || 0;
+    return parseFloat(s) || 0;
+  }
+
+  // Formata número de volta para BRL
+  function formatValor(n) {
+    if (n === 0) return '—';
+    return n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+  }
+
+  function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+
+  function matchName(docName, dbRow) {
+    const nomeKey = Object.keys(dbRow).find(k => /nome|name/i.test(k)) || Object.keys(dbRow)[0];
+    const nDoc = norm(docName);
+    const nDB = norm(dbRow[nomeKey]);
+    if (!nDoc || !nDB) return null;
+    if (nDoc === nDB) return 'exato';
+    const wDoc = nDoc.split(' ').filter(w=>w.length>2);
+    const wDB = nDB.split(' ').filter(w=>w.length>2);
+    const hits = wDoc.filter(w=>wDB.includes(w));
+    if (hits.length >= 2) return 'parcial';
+    if (hits.length === 1 && wDoc.length <= 2) return 'parcial';
+    return null;
+  }
+
+  function crossAndAggregate(rawRecords) {
+    if (!dbData) return [];
+    const nomeKey = Object.keys(dbData[0]).find(k=>/nome|name/i.test(k)) || Object.keys(dbData[0])[0];
+    const deptKey = Object.keys(dbData[0]).find(k=>/depart|setor|area/i.test(k));
+
+    // Agrupa por nome normalizado — soma valores, une origens
+    const map = new Map();
+    rawRecords.forEach(r => {
+      const key = norm(r.nome);
+      if (!key) return;
+      if (!map.has(key)) {
+        map.set(key, { nome_doc: r.nome, origens: new Set(), valorTotal: 0, ocorrencias: 0 });
+      }
+      const entry = map.get(key);
+      entry.origens.add(r.origem || '');
+      entry.ocorrencias++;
+      entry.valorTotal += parseValor(r.valor);
+    });
+
+    // Cruza com banco e monta resultado final
+    const result = [];
+    map.forEach((entry, key) => {
+      let best = null, type = null;
+      for (const db of dbData) {
+        const mt = matchName(entry.nome_doc, db);
+        if (mt === 'exato') { best = db; type = 'exato'; break; }
+        if (mt === 'parcial' && !best) { best = db; type = 'parcial'; }
+      }
+      result.push({
+        nome_doc: entry.nome_doc,
+        valor_total: entry.valorTotal > 0 ? formatValor(entry.valorTotal) : '—',
+        valor_num: entry.valorTotal,
+        ocorrencias: entry.ocorrencias,
+        origens: [...entry.origens].join(', '),
+        status: best ? type : 'nao_encontrado',
+        nome_banco: best ? (best[nomeKey] || '—') : '—',
+        departamento: best ? (deptKey ? best[deptKey] : '—') : '—',
+      });
+    });
+
+    // Ordena: encontrados primeiro, depois por nome
+    return result.sort((a,b) => {
+      if (a.status !== 'nao_encontrado' && b.status === 'nao_encontrado') return -1;
+      if (a.status === 'nao_encontrado' && b.status !== 'nao_encontrado') return 1;
+      return a.nome_doc.localeCompare(b.nome_doc, 'pt-BR');
+    });
+  }
+
+  async function processAll() {
     if (!dbData) { addBot('Carregue a <strong>base de dados</strong> primeiro.'); return; }
-    addUser(`📄 ${file.name}`);
-    setProgress(10);
-    try {
-      let text = '';
-      const ext = file.name.split('.').pop().toLowerCase();
-      if (ext === 'pdf') {
-        addBot('Lendo PDF...');
-        text = await extractPDFText(file);
-      } else if (['xlsx', 'xls', 'csv'].includes(ext)) {
-        addBot('Lendo planilha...');
-        text = await extractExcelText(file);
-      } else {
-        addBot('Formato não suportado. Use PDF, Excel ou CSV.'); setProgress(0); return;
+    const pending = fileQueue.filter(f => f.status === 'aguardando');
+    if (!pending.length) { addBot('Nenhum arquivo aguardando na fila.'); return; }
+
+    document.getElementById('process-btn').disabled = true;
+    addBot(`Processando <strong>${pending.length} arquivo${pending.length>1?'s':''}</strong> — a IA vai buscar todos os nomes próprios...`);
+
+    let allRaw = [];
+
+    for (let i = 0; i < fileQueue.length; i++) {
+      const item = fileQueue[i];
+      if (item.status !== 'aguardando') continue;
+      fileQueue[i].status = 'processando';
+      renderQueue();
+      setProgress(Math.round((i / fileQueue.length) * 75) + 10);
+
+      try {
+        const text = item.ext === 'pdf'
+          ? await extractPDFText(item.file)
+          : await extractExcelText(item.file);
+
+        const form = new FormData();
+        form.append('text', text.slice(0, 12000));
+        form.append('filename', item.name);
+
+        const resp = await fetch(`${API}/extract`, {method:'POST', body:form});
+        if (!resp.ok) throw new Error(`Erro ${resp.status}`);
+        const data = await resp.json();
+        const records = data.records || [];
+        allRaw = allRaw.concat(records);
+
+        fileQueue[i].status = 'ok';
+        addBot(`<strong>${item.name}</strong> — ${records.length} nome${records.length!==1?'s':''} encontrado${records.length!==1?'s':''}.`);
+      } catch(err) {
+        fileQueue[i].status = 'erro';
+        addBot(`Erro em <strong>${item.name}</strong>: ${err.message}`);
       }
-      setProgress(40);
-      addBot('Enviando para IA analisar...');
+      renderQueue();
+    }
 
-      const form = new FormData();
-      form.append('text', text.slice(0, 8000));
-      form.append('filename', file.name);
+    setProgress(90);
+    const aggregated = crossAndAggregate(allRaw);
+    resultData = aggregated;
+    setProgress(100);
+    setTimeout(() => setProgress(0), 800);
+    document.getElementById('process-btn').disabled = false;
 
-      const resp = await fetch(`${API}/extract`, { method: 'POST', body: form });
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.detail || `Erro ${resp.status}`);
-      }
-      const data = await resp.json();
-      setProgress(80);
-
-      const extracted = data.records;
-      if (!extracted || !extracted.length) {
-        addBot('A IA não encontrou registros com nome e valor neste documento.'); setProgress(0); return;
-      }
-
-      const crossed = crossWithDB(extracted);
-      resultData = crossed;
-      setProgress(100);
-
-      const nEx = crossed.filter(r => r.status === 'exato').length;
-      const nPar = crossed.filter(r => r.status === 'parcial').length;
-      const nNao = crossed.filter(r => r.status === 'nao_encontrado').length;
-
-      addBot(`Análise completa! <strong>${crossed.length} registros</strong>.<br>` +
+    if (aggregated.length > 0) {
+      const nEx = aggregated.filter(r=>r.status==='exato').length;
+      const nPar = aggregated.filter(r=>r.status==='parcial').length;
+      const nNao = aggregated.filter(r=>r.status==='nao_encontrado').length;
+      const totalGeral = aggregated.reduce((s,r)=>s+r.valor_num, 0);
+      addBot(
+        `Concluído! <strong>${aggregated.length} pessoas únicas</strong> identificadas.<br>` +
         `<span style="color:var(--teal-text)">✓ ${nEx} exato</span> · ` +
         `<span style="color:var(--amber-text)">~ ${nPar} parcial</span> · ` +
-        `<span style="color:#A32D2D">✗ ${nNao} não encontrado</span>`);
-      renderTable(crossed, file.name);
-      setTimeout(() => setProgress(0), 800);
-    } catch (err) {
-      setProgress(0);
-      addBot(`Erro: ${err.message}`);
+        `<span style="color:#A32D2D">✗ ${nNao} não encontrado</span><br>` +
+        (totalGeral > 0 ? `Total geral de valores: <strong>${formatValor(totalGeral)}</strong>` : '')
+      );
+      renderTable(aggregated);
+    } else {
+      addBot('Nenhum nome próprio encontrado nos documentos.');
     }
   }
 
@@ -284,15 +424,15 @@
       const reader = new FileReader();
       reader.onload = async ev => {
         try {
-          const pdf = await pdfjsLib.getDocument({ data: ev.target.result }).promise;
+          const pdf = await pdfjsLib.getDocument({data: ev.target.result}).promise;
           let text = '';
           for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
             const page = await pdf.getPage(i);
             const content = await page.getTextContent();
-            text += content.items.map(s => s.str).join(' ') + '\n';
+            text += content.items.map(s=>s.str).join(' ') + '\n';
           }
           resolve(text);
-        } catch (e) { reject(e); }
+        } catch(e) { reject(e); }
       };
       reader.readAsArrayBuffer(file);
     });
@@ -303,65 +443,56 @@
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          const wb = XLSX.read(ev.target.result, { type: 'array' });
+          const wb = XLSX.read(ev.target.result, {type:'array'});
           let text = '';
           wb.SheetNames.forEach(name => {
             const ws = wb.Sheets[name];
-            XLSX.utils.sheet_to_json(ws, { header: 1 }).forEach(row => { text += row.join('\t') + '\n'; });
+            XLSX.utils.sheet_to_json(ws, {header:1}).forEach(row => { text += row.join('\t') + '\n'; });
           });
           resolve(text);
-        } catch (e) { reject(e); }
+        } catch(e) { reject(e); }
       };
       reader.readAsArrayBuffer(file);
     });
   }
 
-  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim(); }
+  function renderTable(data) {
+    const arquivos = new Set(data.flatMap(r => r.origens.split(', ')));
+    document.getElementById('rt-title').textContent =
+      `${data.length} pessoas · ${arquivos.size} arquivo${arquivos.size!==1?'s':''}`;
 
-  function matchName(docName, dbRow) {
-    const nDoc = norm(docName);
-    const nomeKey = Object.keys(dbRow).find(k => /nome|name/i.test(k)) || Object.keys(dbRow)[0];
-    const nDB = norm(dbRow[nomeKey]);
-    if (!nDoc || !nDB) return null;
-    if (nDoc === nDB) return 'exato';
-    const wDoc = nDoc.split(' ').filter(w => w.length > 2);
-    const wDB = nDB.split(' ').filter(w => w.length > 2);
-    const hits = wDoc.filter(w => wDB.includes(w));
-    if (hits.length >= 2) return 'parcial';
-    if (hits.length === 1 && wDoc.length <= 2) return 'parcial';
-    return null;
-  }
+    const cols = ['nome_doc','valor_total','ocorrencias','status','nome_banco','departamento'];
+    const labels = {nome_doc:'Nome (documento)', valor_total:'Valor total', ocorrencias:'Ocorr.', status:'Validação', nome_banco:'Nome oficial', departamento:'Departamento'};
+    const widths = {nome_doc:'22%', valor_total:'13%', ocorrencias:'7%', status:'10%', nome_banco:'22%', departamento:'16%'};
 
-  function crossWithDB(extracted) {
-    const nomeKey = Object.keys(dbData[0]).find(k => /nome|name/i.test(k)) || Object.keys(dbData[0])[0];
-    const deptKey = Object.keys(dbData[0]).find(k => /depart|setor|area/i.test(k));
-    return extracted.map(row => {
-      let best = null, type = null;
-      for (const db of dbData) {
-        const mt = matchName(row.nome, db);
-        if (mt === 'exato') { best = db; type = 'exato'; break; }
-        if (mt === 'parcial' && !best) { best = db; type = 'parcial'; }
-      }
-      return {
-        nome_doc: row.nome || '—', valor: row.valor || '—',
-        status: best ? type : 'nao_encontrado',
-        nome_banco: best ? (best[nomeKey] || '—') : '—',
-        departamento: best ? (deptKey ? best[deptKey] : '—') : '—',
-      };
-    });
-  }
+    const thead = '<colgroup>' + cols.map(c=>`<col style="width:${widths[c]}">`).join('') + '</colgroup>' +
+      '<tr>' + cols.map(c=>`<th>${labels[c]}</th>`).join('') + '</tr>';
 
-  function renderTable(data, fname) {
-    document.getElementById('rt-title').textContent = `${data.length} registros — ${fname}`;
-    const cols = ['nome_doc', 'valor', 'status', 'nome_banco', 'departamento'];
-    const labels = { nome_doc: 'Nome (documento)', valor: 'Valor', status: 'Validação', nome_banco: 'Nome oficial', departamento: 'Departamento' };
-    const widths = { nome_doc: '22%', valor: '13%', status: '12%', nome_banco: '25%', departamento: '18%' };
-    const thead = '<colgroup>' + cols.map(c => `<col style="width:${widths[c]}">`).join('') + '</colgroup><tr>' + cols.map(c => `<th>${labels[c]}</th>`).join('') + '</tr>';
     const tbody = data.map(r => {
-      const b = r.status === 'exato' ? '<span class="badge ok">exato</span>' : r.status === 'parcial' ? '<span class="badge parcial">parcial</span>' : '<span class="badge nao">não encontrado</span>';
-      return '<tr>' + `<td title="${r.nome_doc}">${r.nome_doc}</td><td>${r.valor}</td><td>${b}</td><td title="${r.nome_banco}">${r.nome_banco}</td><td>${r.departamento}</td>` + '</tr>';
+      const b = r.status==='exato'?'<span class="badge ok">exato</span>':
+                r.status==='parcial'?'<span class="badge parcial">parcial</span>':
+                '<span class="badge nao">não encontrado</span>';
+      return '<tr>' +
+        `<td title="${r.nome_doc}">${r.nome_doc}</td>` +
+        `<td>${r.valor_total}</td>` +
+        `<td style="text-align:center;color:var(--txt3)">${r.ocorrencias}</td>` +
+        `<td>${b}</td>` +
+        `<td title="${r.nome_banco}">${r.nome_banco}</td>` +
+        `<td>${r.departamento}</td>` +
+      '</tr>';
     }).join('');
-    document.getElementById('rt').innerHTML = `<table class="rt"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+
+    // Linha de totais
+    const totalGeral = data.reduce((s,r)=>s+r.valor_num,0);
+    const totalRow = totalGeral > 0 ? `<tr class="sum-row">
+      <td>Total geral</td>
+      <td>${formatValor(totalGeral)}</td>
+      <td style="text-align:center">${data.reduce((s,r)=>s+r.ocorrencias,0)}</td>
+      <td colspan="3"></td>
+    </tr>` : '';
+
+    document.getElementById('rt').innerHTML =
+      `<table class="rt"><thead>${thead}</thead><tbody>${tbody}${totalRow}</tbody></table>`;
     document.getElementById('result-panel').classList.add('on');
   }
 
@@ -371,22 +502,24 @@
     addUser(v); inp.value = '';
     showTyping();
     try {
-      const ctx = resultData.length ? `Dados processados: ${JSON.stringify(resultData.slice(0, 20))}. ` : '';
+      const ctx = resultData.length
+        ? `Resultados (${resultData.length} pessoas): ${JSON.stringify(resultData.slice(0,30))}. `
+        : 'Nenhum documento processado ainda. ';
       const form = new FormData();
       form.append('question', v);
       form.append('context', ctx);
-      const resp = await fetch(`${API}/chat`, { method: 'POST', body: form });
+      const resp = await fetch(`${API}/chat`, {method:'POST', body:form});
       removeTyping();
       if (!resp.ok) { addBot('Erro ao consultar a IA.'); return; }
       addBot((await resp.json()).answer);
-    } catch (e) { removeTyping(); addBot(`Erro: ${e.message}`); }
+    } catch(e) { removeTyping(); addBot(`Erro: ${e.message}`); }
   }
 
   function exportCSV() {
     if (!resultData.length) return;
-    const cols = ['nome_doc', 'valor', 'status', 'nome_banco', 'departamento'];
-    const labels = ['Nome (documento)', 'Valor', 'Validação', 'Nome oficial', 'Departamento'];
-    const csv = [labels.join(','), ...resultData.map(r => cols.map(c => `"${r[c] || ''}"`).join(','))].join('\n');
+    const cols = ['nome_doc','valor_total','ocorrencias','origens','status','nome_banco','departamento'];
+    const labels = ['Nome (documento)','Valor total','Ocorrências','Arquivos','Validação','Nome oficial','Departamento'];
+    const csv = [labels.join(','), ...resultData.map(r=>cols.map(c=>`"${r[c]||''}"`).join(','))].join('\n');
     const a = document.createElement('a');
     a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
     a.download = 'resultado_validacao.csv'; a.click();
@@ -395,23 +528,23 @@
   function setProgress(p) { document.getElementById('prog-bar').style.width = p + '%'; }
   function addBot(html) {
     const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className = 'msg bot';
+    const d = document.createElement('div'); d.className='msg bot';
     d.innerHTML = `<div class="bubble">${html}</div><span class="msg-time">agora</span>`;
     c.appendChild(d); c.scrollTop = c.scrollHeight;
   }
   function addUser(t) {
     const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className = 'msg user';
+    const d = document.createElement('div'); d.className='msg user';
     d.innerHTML = `<div class="bubble">${t}</div><span class="msg-time">agora</span>`;
     c.appendChild(d); c.scrollTop = c.scrollHeight;
   }
   function showTyping() {
     const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className = 'msg bot'; d.id = 'typ';
+    const d = document.createElement('div'); d.className='msg bot'; d.id='typ';
     d.innerHTML = '<div class="bubble typing"><span></span><span></span><span></span></div>';
     c.appendChild(d); c.scrollTop = c.scrollHeight;
   }
-  function removeTyping() { const t = document.getElementById('typ'); if (t) t.remove(); }
+  function removeTyping() { const t=document.getElementById('typ'); if(t)t.remove(); }
 </script>
 </body>
 </html>
