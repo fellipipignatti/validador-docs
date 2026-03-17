@@ -84,6 +84,8 @@
     #rh span { font-size:11px; font-weight:500; color:var(--txt); }
     .act-btn { font-size:10px; padding:3px 8px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg); color:var(--txt); cursor:pointer; margin-left:5px; font-family:var(--mono); }
     .act-btn:hover { background:var(--bg3); }
+    .act-btn.primary { background:var(--teal); color:#fff; border-color:var(--teal); }
+    .act-btn.primary:hover { background:var(--teal-dark); }
     #rw { overflow:auto; flex:1; padding:0 14px 10px; }
     table.rt { width:100%; border-collapse:collapse; font-size:11px; margin-top:7px; font-family:var(--mono); table-layout:fixed; }
     table.rt th { font-weight:500; color:var(--txt2); padding:5px 7px; border-bottom:0.5px solid var(--border); text-align:left; white-space:nowrap; }
@@ -100,7 +102,7 @@
     input[type=file] { display:none; }
     .sample-btn { display:inline-block; margin-top:7px; font-size:10px; padding:4px 10px; border-radius:6px; border:0.5px solid var(--border); background:var(--bg); color:var(--txt); cursor:pointer; font-family:var(--mono); }
     .sample-btn:hover { background:var(--teal-light); border-color:var(--teal); color:var(--teal-text); }
-    .sum-row td { font-weight:500; border-top:0.5px solid var(--border); color:var(--teal-text); }
+    .sum-row td { font-weight:500; border-top:0.5px solid var(--border) !important; color:var(--teal-text); }
     @media (max-width:640px) {
       #app { flex-direction:column; height:auto; min-height:100vh; border-radius:0; }
       #sidebar { width:100%; min-width:unset; border-right:none; border-bottom:0.5px solid var(--border); }
@@ -115,12 +117,10 @@
       <h2>Validador de Documentos</h2>
       <p>powered by Claude AI</p>
     </div>
-
     <div class="sec">O que a IA faz</div>
     <div class="chip"><div class="dot" style="background:#1D9E75"></div>Extrai nomes próprios<span class="tag">automático</span></div>
     <div class="chip"><div class="dot" style="background:#378ADD"></div>Soma valores por pessoa<span class="tag">agrega</span></div>
     <div class="chip"><div class="dot" style="background:#D85A30"></div>Busca departamento<span class="tag">do banco</span></div>
-
     <div class="sec">Base de dados</div>
     <div id="db-zone" onclick="document.getElementById('db-in').click()">
       <p id="db-lbl">Carregar CSV / Excel</p>
@@ -141,8 +141,9 @@
         <div class="bubble">
           Olá! Envie seus documentos e a IA vai:<br><br>
           1. Varrer cada arquivo buscando <strong>todos os nomes próprios</strong><br>
-          2. Se o mesmo nome aparecer várias vezes, <strong>somar os valores</strong><br>
-          3. Buscar cada nome no banco e trazer o <strong>departamento</strong><br><br>
+          2. Nomes repetidos terão seus <strong>valores somados</strong><br>
+          3. Cada nome é cruzado com o banco para trazer o <strong>departamento</strong><br>
+          4. Exporte o resultado em <strong>Excel formatado</strong> com um clique<br><br>
           Carregue a base de dados e adicione seus arquivos na fila.
         </div>
         <span class="msg-time">agora</span>
@@ -175,6 +176,7 @@
       <div id="rh">
         <span id="rt-title">resultados</span>
         <div>
+          <button class="act-btn primary" onclick="exportExcel()">exportar Excel</button>
           <button class="act-btn" onclick="exportCSV()">exportar CSV</button>
           <button class="act-btn" onclick="document.getElementById('result-panel').classList.remove('on')">fechar</button>
         </div>
@@ -201,8 +203,7 @@
   ];
 
   function loadSampleDB() {
-    dbData = SAMPLE_DB;
-    renderDBPreview();
+    dbData = SAMPLE_DB; renderDBPreview();
     document.getElementById('db-lbl').textContent = '✓ base_colaboradores (8 registros)';
     document.getElementById('db-zone').classList.add('loaded');
     addBot('Base de exemplo carregada com <strong>8 colaboradores</strong>. Adicione seus arquivos!');
@@ -214,8 +215,7 @@
     r.onload = ev => {
       try {
         const wb = XLSX.read(ev.target.result, {type:'array'});
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        dbData = XLSX.utils.sheet_to_json(ws);
+        dbData = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
         document.getElementById('db-lbl').textContent = `✓ ${f.name} (${dbData.length} reg.)`;
         document.getElementById('db-zone').classList.add('loaded');
         renderDBPreview();
@@ -228,9 +228,8 @@
   function renderDBPreview() {
     if (!dbData || !dbData.length) return;
     const cols = Object.keys(dbData[0]);
-    const rows = dbData.slice(0, 3);
     let h = '<table><thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
-    h += rows.map(r=>'<tr>'+cols.map(c=>`<td>${r[c]||''}</td>`).join('')+'</tr>').join('');
+    h += dbData.slice(0,3).map(r=>'<tr>'+cols.map(c=>`<td>${r[c]||''}</td>`).join('')+'</tr>').join('');
     h += '</tbody></table>';
     document.getElementById('db-preview').innerHTML = h;
     document.getElementById('db-stats').textContent = `${dbData.length} registros · ${cols.length} colunas`;
@@ -247,8 +246,7 @@
     const allowed = ['pdf','xlsx','xls','csv'];
     files.forEach(f => {
       const ext = f.name.split('.').pop().toLowerCase();
-      if (!allowed.includes(ext)) return;
-      if (fileQueue.find(q => q.name === f.name)) return;
+      if (!allowed.includes(ext) || fileQueue.find(q=>q.name===f.name)) return;
       fileQueue.push({file:f, name:f.name, ext, status:'aguardando'});
     });
     renderQueue();
@@ -258,10 +256,10 @@
     const el = document.getElementById('file-queue');
     const actions = document.getElementById('queue-actions');
     if (!fileQueue.length) { el.innerHTML=''; actions.style.display='none'; return; }
-    actions.style.display = 'flex';
+    actions.style.display='flex';
     el.innerHTML = fileQueue.map((f,i) => {
-      const sc = f.status==='ok'?'ok':f.status==='erro'?'err':f.status==='processando'?'processing':'';
-      const sl = f.status==='aguardando'?'aguardando':f.status==='processando'?'processando...':f.status==='ok'?'✓ concluído':'✗ erro';
+      const sc = {ok:'ok',erro:'err',processando:'processing'}[f.status]||'';
+      const sl = {aguardando:'aguardando',processando:'processando...',ok:'✓ concluído',erro:'✗ erro'}[f.status];
       return `<div class="file-item">
         <span class="file-ext">${f.ext.toUpperCase()}</span>
         <span class="fname" title="${f.name}">${f.name}</span>
@@ -274,34 +272,27 @@
   function removeFromQueue(i) { fileQueue.splice(i,1); renderQueue(); }
   function clearQueue() { fileQueue=fileQueue.filter(f=>f.status==='processando'); renderQueue(); }
 
-  // Converte string de valor para número
   function parseValor(v) {
-    if (!v || v === '—' || v === null) return 0;
+    if (!v || v==='—' || v===null) return 0;
     const s = String(v).replace(/[^0-9,\.]/g,'');
-    // Formato BR: 1.234,56 → 1234.56
-    if (s.includes(',')) return parseFloat(s.replace(/\./g,'').replace(',','.')) || 0;
-    return parseFloat(s) || 0;
+    return s.includes(',') ? parseFloat(s.replace(/\./g,'').replace(',','.')) || 0 : parseFloat(s) || 0;
   }
-
-  // Formata número de volta para BRL
   function formatValor(n) {
-    if (n === 0) return '—';
-    return n.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+    if (n===0) return '—';
+    return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   }
-
   function norm(s) { return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 
   function matchName(docName, dbRow) {
-    const nomeKey = Object.keys(dbRow).find(k => /nome|name/i.test(k)) || Object.keys(dbRow)[0];
-    const nDoc = norm(docName);
-    const nDB = norm(dbRow[nomeKey]);
-    if (!nDoc || !nDB) return null;
-    if (nDoc === nDB) return 'exato';
+    const nomeKey = Object.keys(dbRow).find(k=>/nome|name/i.test(k)) || Object.keys(dbRow)[0];
+    const nDoc = norm(docName), nDB = norm(dbRow[nomeKey]);
+    if (!nDoc||!nDB) return null;
+    if (nDoc===nDB) return 'exato';
     const wDoc = nDoc.split(' ').filter(w=>w.length>2);
-    const wDB = nDB.split(' ').filter(w=>w.length>2);
+    const wDB  = nDB.split(' ').filter(w=>w.length>2);
     const hits = wDoc.filter(w=>wDB.includes(w));
-    if (hits.length >= 2) return 'parcial';
-    if (hits.length === 1 && wDoc.length <= 2) return 'parcial';
+    if (hits.length>=2) return 'parcial';
+    if (hits.length===1&&wDoc.length<=2) return 'parcial';
     return null;
   }
 
@@ -309,127 +300,94 @@
     if (!dbData) return [];
     const nomeKey = Object.keys(dbData[0]).find(k=>/nome|name/i.test(k)) || Object.keys(dbData[0])[0];
     const deptKey = Object.keys(dbData[0]).find(k=>/depart|setor|area/i.test(k));
-
-    // Agrupa por nome normalizado — soma valores, une origens
     const map = new Map();
     rawRecords.forEach(r => {
-      const key = norm(r.nome);
-      if (!key) return;
-      if (!map.has(key)) {
-        map.set(key, { nome_doc: r.nome, origens: new Set(), valorTotal: 0, ocorrencias: 0 });
-      }
-      const entry = map.get(key);
-      entry.origens.add(r.origem || '');
-      entry.ocorrencias++;
-      entry.valorTotal += parseValor(r.valor);
+      const key = norm(r.nome); if (!key) return;
+      if (!map.has(key)) map.set(key, {nome_doc:r.nome, origens:new Set(), valorTotal:0, ocorrencias:0});
+      const e = map.get(key);
+      e.origens.add(r.origem||''); e.ocorrencias++; e.valorTotal += parseValor(r.valor);
     });
-
-    // Cruza com banco e monta resultado final
     const result = [];
-    map.forEach((entry, key) => {
-      let best = null, type = null;
+    map.forEach((entry) => {
+      let best=null, type=null;
       for (const db of dbData) {
         const mt = matchName(entry.nome_doc, db);
-        if (mt === 'exato') { best = db; type = 'exato'; break; }
-        if (mt === 'parcial' && !best) { best = db; type = 'parcial'; }
+        if (mt==='exato') { best=db; type='exato'; break; }
+        if (mt==='parcial'&&!best) { best=db; type='parcial'; }
       }
       result.push({
         nome_doc: entry.nome_doc,
-        valor_total: entry.valorTotal > 0 ? formatValor(entry.valorTotal) : '—',
+        valor_total: entry.valorTotal>0 ? formatValor(entry.valorTotal) : '—',
         valor_num: entry.valorTotal,
         ocorrencias: entry.ocorrencias,
         origens: [...entry.origens].join(', '),
         status: best ? type : 'nao_encontrado',
-        nome_banco: best ? (best[nomeKey] || '—') : '—',
+        nome_banco: best ? (best[nomeKey]||'—') : '—',
         departamento: best ? (deptKey ? best[deptKey] : '—') : '—',
       });
     });
-
-    // Ordena: encontrados primeiro, depois por nome
     return result.sort((a,b) => {
-      if (a.status !== 'nao_encontrado' && b.status === 'nao_encontrado') return -1;
-      if (a.status === 'nao_encontrado' && b.status !== 'nao_encontrado') return 1;
-      return a.nome_doc.localeCompare(b.nome_doc, 'pt-BR');
+      if (a.status!=='nao_encontrado'&&b.status==='nao_encontrado') return -1;
+      if (a.status==='nao_encontrado'&&b.status!=='nao_encontrado') return 1;
+      return a.nome_doc.localeCompare(b.nome_doc,'pt-BR');
     });
   }
 
   async function processAll() {
     if (!dbData) { addBot('Carregue a <strong>base de dados</strong> primeiro.'); return; }
-    const pending = fileQueue.filter(f => f.status === 'aguardando');
+    const pending = fileQueue.filter(f=>f.status==='aguardando');
     if (!pending.length) { addBot('Nenhum arquivo aguardando na fila.'); return; }
-
     document.getElementById('process-btn').disabled = true;
-    addBot(`Processando <strong>${pending.length} arquivo${pending.length>1?'s':''}</strong> — a IA vai buscar todos os nomes próprios...`);
-
+    addBot(`Processando <strong>${pending.length} arquivo${pending.length>1?'s':''}</strong>...`);
     let allRaw = [];
-
-    for (let i = 0; i < fileQueue.length; i++) {
-      const item = fileQueue[i];
-      if (item.status !== 'aguardando') continue;
-      fileQueue[i].status = 'processando';
-      renderQueue();
-      setProgress(Math.round((i / fileQueue.length) * 75) + 10);
-
+    for (let i=0; i<fileQueue.length; i++) {
+      const item = fileQueue[i]; if (item.status!=='aguardando') continue;
+      fileQueue[i].status='processando'; renderQueue();
+      setProgress(Math.round((i/fileQueue.length)*75)+10);
       try {
-        const text = item.ext === 'pdf'
-          ? await extractPDFText(item.file)
-          : await extractExcelText(item.file);
-
+        const text = item.ext==='pdf' ? await extractPDFText(item.file) : await extractExcelText(item.file);
         const form = new FormData();
-        form.append('text', text.slice(0, 12000));
-        form.append('filename', item.name);
-
+        form.append('text', text.slice(0,12000)); form.append('filename', item.name);
         const resp = await fetch(`${API}/extract`, {method:'POST', body:form});
         if (!resp.ok) throw new Error(`Erro ${resp.status}`);
-        const data = await resp.json();
-        const records = data.records || [];
+        const records = (await resp.json()).records || [];
         allRaw = allRaw.concat(records);
-
-        fileQueue[i].status = 'ok';
+        fileQueue[i].status='ok';
         addBot(`<strong>${item.name}</strong> — ${records.length} nome${records.length!==1?'s':''} encontrado${records.length!==1?'s':''}.`);
-      } catch(err) {
-        fileQueue[i].status = 'erro';
-        addBot(`Erro em <strong>${item.name}</strong>: ${err.message}`);
-      }
+      } catch(err) { fileQueue[i].status='erro'; addBot(`Erro em <strong>${item.name}</strong>: ${err.message}`); }
       renderQueue();
     }
-
     setProgress(90);
     const aggregated = crossAndAggregate(allRaw);
     resultData = aggregated;
-    setProgress(100);
-    setTimeout(() => setProgress(0), 800);
-    document.getElementById('process-btn').disabled = false;
-
-    if (aggregated.length > 0) {
-      const nEx = aggregated.filter(r=>r.status==='exato').length;
-      const nPar = aggregated.filter(r=>r.status==='parcial').length;
-      const nNao = aggregated.filter(r=>r.status==='nao_encontrado').length;
-      const totalGeral = aggregated.reduce((s,r)=>s+r.valor_num, 0);
+    setProgress(100); setTimeout(()=>setProgress(0),800);
+    document.getElementById('process-btn').disabled=false;
+    if (aggregated.length>0) {
+      const nEx=aggregated.filter(r=>r.status==='exato').length;
+      const nPar=aggregated.filter(r=>r.status==='parcial').length;
+      const nNao=aggregated.filter(r=>r.status==='nao_encontrado').length;
+      const totalGeral=aggregated.reduce((s,r)=>s+r.valor_num,0);
       addBot(
-        `Concluído! <strong>${aggregated.length} pessoas únicas</strong> identificadas.<br>` +
-        `<span style="color:var(--teal-text)">✓ ${nEx} exato</span> · ` +
-        `<span style="color:var(--amber-text)">~ ${nPar} parcial</span> · ` +
-        `<span style="color:#A32D2D">✗ ${nNao} não encontrado</span><br>` +
-        (totalGeral > 0 ? `Total geral de valores: <strong>${formatValor(totalGeral)}</strong>` : '')
+        `Concluído! <strong>${aggregated.length} pessoas únicas</strong>.<br>`+
+        `<span style="color:var(--teal-text)">✓ ${nEx} exato</span> · `+
+        `<span style="color:var(--amber-text)">~ ${nPar} parcial</span> · `+
+        `<span style="color:#A32D2D">✗ ${nNao} não encontrado</span>`+
+        (totalGeral>0?`<br>Total geral: <strong>${formatValor(totalGeral)}</strong>`:'')
       );
       renderTable(aggregated);
-    } else {
-      addBot('Nenhum nome próprio encontrado nos documentos.');
-    }
+    } else { addBot('Nenhum nome próprio encontrado nos documentos.'); }
   }
 
   async function extractPDFText(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve,reject) => {
       const reader = new FileReader();
       reader.onload = async ev => {
         try {
-          const pdf = await pdfjsLib.getDocument({data: ev.target.result}).promise;
-          let text = '';
-          for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+          const pdf = await pdfjsLib.getDocument({data:ev.target.result}).promise;
+          let text='';
+          for (let i=1; i<=Math.min(pdf.numPages,10); i++) {
             const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            text += content.items.map(s=>s.str).join(' ') + '\n';
+            text += (await page.getTextContent()).items.map(s=>s.str).join(' ')+'\n';
           }
           resolve(text);
         } catch(e) { reject(e); }
@@ -439,15 +397,14 @@
   }
 
   async function extractExcelText(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve,reject) => {
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          const wb = XLSX.read(ev.target.result, {type:'array'});
-          let text = '';
+          const wb = XLSX.read(ev.target.result,{type:'array'});
+          let text='';
           wb.SheetNames.forEach(name => {
-            const ws = wb.Sheets[name];
-            XLSX.utils.sheet_to_json(ws, {header:1}).forEach(row => { text += row.join('\t') + '\n'; });
+            XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1}).forEach(row=>{ text+=row.join('\t')+'\n'; });
           });
           resolve(text);
         } catch(e) { reject(e); }
@@ -457,62 +414,177 @@
   }
 
   function renderTable(data) {
-    const arquivos = new Set(data.flatMap(r => r.origens.split(', ')));
+    const arquivos = new Set(data.flatMap(r=>r.origens.split(', ')));
     document.getElementById('rt-title').textContent =
       `${data.length} pessoas · ${arquivos.size} arquivo${arquivos.size!==1?'s':''}`;
-
     const cols = ['nome_doc','valor_total','ocorrencias','status','nome_banco','departamento'];
-    const labels = {nome_doc:'Nome (documento)', valor_total:'Valor total', ocorrencias:'Ocorr.', status:'Validação', nome_banco:'Nome oficial', departamento:'Departamento'};
-    const widths = {nome_doc:'22%', valor_total:'13%', ocorrencias:'7%', status:'10%', nome_banco:'22%', departamento:'16%'};
-
-    const thead = '<colgroup>' + cols.map(c=>`<col style="width:${widths[c]}">`).join('') + '</colgroup>' +
-      '<tr>' + cols.map(c=>`<th>${labels[c]}</th>`).join('') + '</tr>';
-
+    const labels = {nome_doc:'Nome (documento)',valor_total:'Valor total',ocorrencias:'Ocorr.',status:'Validação',nome_banco:'Nome oficial',departamento:'Departamento'};
+    const widths = {nome_doc:'22%',valor_total:'13%',ocorrencias:'7%',status:'10%',nome_banco:'22%',departamento:'16%'};
+    const thead = '<colgroup>'+cols.map(c=>`<col style="width:${widths[c]}">`).join('')+'</colgroup>'+
+      '<tr>'+cols.map(c=>`<th>${labels[c]}</th>`).join('')+'</tr>';
     const tbody = data.map(r => {
       const b = r.status==='exato'?'<span class="badge ok">exato</span>':
                 r.status==='parcial'?'<span class="badge parcial">parcial</span>':
                 '<span class="badge nao">não encontrado</span>';
-      return '<tr>' +
-        `<td title="${r.nome_doc}">${r.nome_doc}</td>` +
-        `<td>${r.valor_total}</td>` +
-        `<td style="text-align:center;color:var(--txt3)">${r.ocorrencias}</td>` +
-        `<td>${b}</td>` +
-        `<td title="${r.nome_banco}">${r.nome_banco}</td>` +
-        `<td>${r.departamento}</td>` +
+      return '<tr>'+
+        `<td title="${r.nome_doc}">${r.nome_doc}</td>`+
+        `<td>${r.valor_total}</td>`+
+        `<td style="text-align:center;color:var(--txt3)">${r.ocorrencias}</td>`+
+        `<td>${b}</td>`+
+        `<td title="${r.nome_banco}">${r.nome_banco}</td>`+
+        `<td>${r.departamento}</td>`+
       '</tr>';
     }).join('');
-
-    // Linha de totais
     const totalGeral = data.reduce((s,r)=>s+r.valor_num,0);
-    const totalRow = totalGeral > 0 ? `<tr class="sum-row">
-      <td>Total geral</td>
-      <td>${formatValor(totalGeral)}</td>
+    const totalRow = totalGeral>0 ? `<tr class="sum-row">
+      <td>Total geral</td><td>${formatValor(totalGeral)}</td>
       <td style="text-align:center">${data.reduce((s,r)=>s+r.ocorrencias,0)}</td>
-      <td colspan="3"></td>
-    </tr>` : '';
-
+      <td colspan="3"></td></tr>` : '';
     document.getElementById('rt').innerHTML =
       `<table class="rt"><thead>${thead}</thead><tbody>${tbody}${totalRow}</tbody></table>`;
     document.getElementById('result-panel').classList.add('on');
   }
 
-  async function chatAI() {
-    const inp = document.getElementById('ci');
-    const v = inp.value.trim(); if (!v) return;
-    addUser(v); inp.value = '';
-    showTyping();
-    try {
-      const ctx = resultData.length
-        ? `Resultados (${resultData.length} pessoas): ${JSON.stringify(resultData.slice(0,30))}. `
-        : 'Nenhum documento processado ainda. ';
-      const form = new FormData();
-      form.append('question', v);
-      form.append('context', ctx);
-      const resp = await fetch(`${API}/chat`, {method:'POST', body:form});
-      removeTyping();
-      if (!resp.ok) { addBot('Erro ao consultar a IA.'); return; }
-      addBot((await resp.json()).answer);
-    } catch(e) { removeTyping(); addBot(`Erro: ${e.message}`); }
+  // ─── EXPORT EXCEL FORMATADO ──────────────────────────────────────────────
+  function exportExcel() {
+    if (!resultData.length) return;
+
+    const wb = XLSX.utils.book_new();
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    const arquivos = [...new Set(resultData.flatMap(r=>r.origens.split(', ')))].join(', ');
+
+    // Monta linhas de dados
+    const headers = ['Nome (documento)','Valor total','Ocorrências','Validação','Nome oficial (banco)','Departamento','Arquivos de origem'];
+    const rows = resultData.map(r => [
+      r.nome_doc,
+      r.valor_num > 0 ? r.valor_num : '',   // número real para Excel somar
+      r.ocorrencias,
+      r.status === 'exato' ? 'Exato' : r.status === 'parcial' ? 'Parcial' : 'Não encontrado',
+      r.nome_banco,
+      r.departamento,
+      r.origens,
+    ]);
+
+    // Linha de total
+    const totalGeral = resultData.reduce((s,r)=>s+r.valor_num,0);
+    const totalOcorr = resultData.reduce((s,r)=>s+r.ocorrencias,0);
+    const totalRow = ['TOTAL GERAL', totalGeral>0?totalGeral:'', totalOcorr, '', '', '', ''];
+
+    // Linha de cabeçalho do relatório
+    const titleRow   = [`Relatório de Validação — ${hoje}`,'','','','','',''];
+    const sourceRow  = [`Arquivos processados: ${arquivos}`,'','','','','',''];
+    const emptyRow   = ['','','','','','',''];
+
+    const wsData = [titleRow, sourceRow, emptyRow, headers, ...rows, emptyRow, totalRow];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Larguras das colunas
+    ws['!cols'] = [
+      {wch:35}, // Nome doc
+      {wch:16}, // Valor
+      {wch:10}, // Ocorr
+      {wch:14}, // Validação
+      {wch:35}, // Nome banco
+      {wch:22}, // Depto
+      {wch:30}, // Origens
+    ];
+
+    // Estilos nas células-chave
+    const headerRowIdx = 3; // linha 4 (0-indexed)
+    const numRows = resultData.length;
+    const totalRowIdx = headerRowIdx + numRows + 2;
+
+    // Estilo do título
+    const titleCell = ws['A1'];
+    if (titleCell) {
+      titleCell.s = {
+        font: {bold:true, sz:13, color:{rgb:'085041'}},
+        fill: {fgColor:{rgb:'E1F5EE'}},
+      };
+    }
+
+    // Estilo dos headers
+    headers.forEach((_, ci) => {
+      const addr = XLSX.utils.encode_cell({r:headerRowIdx, c:ci});
+      if (!ws[addr]) ws[addr] = {v:headers[ci], t:'s'};
+      ws[addr].s = {
+        font: {bold:true, color:{rgb:'FFFFFF'}},
+        fill: {fgColor:{rgb:'1D9E75'}},
+        alignment: {horizontal:'center'},
+        border: {
+          bottom:{style:'thin', color:{rgb:'0F6E56'}},
+        }
+      };
+    });
+
+    // Estilo das linhas de dados — alterna cor e formata valor
+    rows.forEach((_, ri) => {
+      const rowIdx = headerRowIdx + 1 + ri;
+      const isEven = ri % 2 === 0;
+      const fillColor = isEven ? 'F5F5F3' : 'FFFFFF';
+
+      // Cor de fundo alternada
+      for (let ci=0; ci<headers.length; ci++) {
+        const addr = XLSX.utils.encode_cell({r:rowIdx, c:ci});
+        if (!ws[addr]) ws[addr] = {v:'', t:'s'};
+        ws[addr].s = {
+          fill: {fgColor:{rgb:fillColor}},
+          alignment: {vertical:'center'},
+        };
+      }
+
+      // Coluna de valor: formato moeda BR
+      const valorAddr = XLSX.utils.encode_cell({r:rowIdx, c:1});
+      if (ws[valorAddr] && ws[valorAddr].v !== '') {
+        ws[valorAddr].t = 'n';
+        ws[valorAddr].z = '#,##0.00';
+        ws[valorAddr].s = {
+          fill: {fgColor:{rgb:fillColor}},
+          numFmt: '#,##0.00',
+          alignment: {horizontal:'right'},
+        };
+      }
+
+      // Coluna validação: cor por status
+      const statusVal = resultData[ri].status;
+      const statusAddr = XLSX.utils.encode_cell({r:rowIdx, c:3});
+      if (ws[statusAddr]) {
+        const statusColor = statusVal==='exato'?'085041': statusVal==='parcial'?'633806':'501313';
+        const statusBg    = statusVal==='exato'?'E1F5EE': statusVal==='parcial'?'FAEEDA':'FCEBEB';
+        ws[statusAddr].s = {
+          font: {color:{rgb:statusColor}},
+          fill: {fgColor:{rgb:statusBg}},
+          alignment: {horizontal:'center'},
+        };
+      }
+    });
+
+    // Estilo da linha de total
+    for (let ci=0; ci<headers.length; ci++) {
+      const addr = XLSX.utils.encode_cell({r:totalRowIdx, c:ci});
+      if (!ws[addr]) ws[addr]={v:totalRow[ci]||'', t: typeof totalRow[ci]==='number'?'n':'s'};
+      ws[addr].s = {
+        font: {bold:true, color:{rgb:'085041'}},
+        fill: {fgColor:{rgb:'E1F5EE'}},
+        border: {top:{style:'medium', color:{rgb:'1D9E75'}}},
+      };
+    }
+    // Formato moeda na célula de total
+    const totalValorAddr = XLSX.utils.encode_cell({r:totalRowIdx, c:1});
+    if (ws[totalValorAddr] && ws[totalValorAddr].v !== '') {
+      ws[totalValorAddr].t = 'n';
+      ws[totalValorAddr].z = '#,##0.00';
+    }
+
+    // Merge do título e subtítulo
+    ws['!merges'] = [
+      {s:{r:0,c:0}, e:{r:0,c:6}},
+      {s:{r:1,c:0}, e:{r:1,c:6}},
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Resultado');
+    XLSX.writeFile(wb, `validacao_${hoje.replace(/\//g,'-')}.xlsx`);
+    addBot('Excel exportado com sucesso!');
   }
 
   function exportCSV() {
@@ -521,28 +593,44 @@
     const labels = ['Nome (documento)','Valor total','Ocorrências','Arquivos','Validação','Nome oficial','Departamento'];
     const csv = [labels.join(','), ...resultData.map(r=>cols.map(c=>`"${r[c]||''}"`).join(','))].join('\n');
     const a = document.createElement('a');
-    a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-    a.download = 'resultado_validacao.csv'; a.click();
+    a.href = 'data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download='resultado_validacao.csv'; a.click();
   }
 
-  function setProgress(p) { document.getElementById('prog-bar').style.width = p + '%'; }
+  async function chatAI() {
+    const inp = document.getElementById('ci');
+    const v = inp.value.trim(); if (!v) return;
+    addUser(v); inp.value='';
+    showTyping();
+    try {
+      const ctx = resultData.length ? `Resultados (${resultData.length} pessoas): ${JSON.stringify(resultData.slice(0,30))}. ` : 'Nenhum documento processado. ';
+      const form = new FormData();
+      form.append('question',v); form.append('context',ctx);
+      const resp = await fetch(`${API}/chat`,{method:'POST',body:form});
+      removeTyping();
+      if (!resp.ok) { addBot('Erro ao consultar a IA.'); return; }
+      addBot((await resp.json()).answer);
+    } catch(e) { removeTyping(); addBot(`Erro: ${e.message}`); }
+  }
+
+  function setProgress(p) { document.getElementById('prog-bar').style.width=p+'%'; }
   function addBot(html) {
-    const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className='msg bot';
-    d.innerHTML = `<div class="bubble">${html}</div><span class="msg-time">agora</span>`;
-    c.appendChild(d); c.scrollTop = c.scrollHeight;
+    const c=document.getElementById('chat-area');
+    const d=document.createElement('div'); d.className='msg bot';
+    d.innerHTML=`<div class="bubble">${html}</div><span class="msg-time">agora</span>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight;
   }
   function addUser(t) {
-    const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className='msg user';
-    d.innerHTML = `<div class="bubble">${t}</div><span class="msg-time">agora</span>`;
-    c.appendChild(d); c.scrollTop = c.scrollHeight;
+    const c=document.getElementById('chat-area');
+    const d=document.createElement('div'); d.className='msg user';
+    d.innerHTML=`<div class="bubble">${t}</div><span class="msg-time">agora</span>`;
+    c.appendChild(d); c.scrollTop=c.scrollHeight;
   }
   function showTyping() {
-    const c = document.getElementById('chat-area');
-    const d = document.createElement('div'); d.className='msg bot'; d.id='typ';
-    d.innerHTML = '<div class="bubble typing"><span></span><span></span><span></span></div>';
-    c.appendChild(d); c.scrollTop = c.scrollHeight;
+    const c=document.getElementById('chat-area');
+    const d=document.createElement('div'); d.className='msg bot'; d.id='typ';
+    d.innerHTML='<div class="bubble typing"><span></span><span></span><span></span></div>';
+    c.appendChild(d); c.scrollTop=c.scrollHeight;
   }
   function removeTyping() { const t=document.getElementById('typ'); if(t)t.remove(); }
 </script>
